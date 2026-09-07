@@ -117,27 +117,31 @@ async def gerar_contrato(
     elif formato == "pdf":
         caminho_pdf_saida = pasta_gerados / "contrato_gerado.pdf"
         
-        # Verifica se 'soffice' (LibreOffice) está instalado no PATH do sistema
-        soffice_path = shutil.which("soffice") or shutil.which("libreoffice")
-        
-        if soffice_path:
-            try:
-                import subprocess
-                subprocess.run([
-                    soffice_path, "--headless", "--convert-to", "pdf",
-                    str(caminho_docx_saida), "--outdir", str(pasta_gerados)
-                ], check=True)
-                
+        try:
+            import subprocess
+            subprocess.run([
+                "soffice", "--headless", "--convert-to", "pdf",
+                str(caminho_docx_saida), "--outdir", str(pasta_gerados)
+            ], check=True)
+            
+            return FileResponse(
+                caminho_pdf_saida,
+                filename=f"Contrato_{contratante_nome}.pdf",
+                media_type="application/pdf"
+            )
+        except Exception as e:
+            # Fallback caso rode no Windows local com docx2pdf
+            if HAS_DOCX2PDF:
+                convert(str(caminho_docx_saida), str(caminho_pdf_saida))
                 return FileResponse(
                     caminho_pdf_saida,
                     filename=f"Contrato_{contratante_nome}.pdf",
                     media_type="application/pdf"
                 )
-            except Exception as e:
-                return {"erro": f"Falha na conversão via LibreOffice: {str(e)}"}
+            return {"erro": f"Erro na conversão para PDF: {str(e)}"}
         
         # Fallback local para Windows com Word instalado
-        elif HAS_DOCX2PDF:
+    elif HAS_DOCX2PDF:
             try:
                 convert(str(caminho_docx_saida), str(caminho_pdf_saida))
                 return FileResponse(
@@ -148,7 +152,7 @@ async def gerar_contrato(
             except Exception as e:
                 return {"erro": f"Falha na conversão local: {str(e)}"}
         
-        else:
+    else:
             return {
                 "erro": "A conversão para PDF não está disponível no servidor de hospedagem gratuita devido a limitações do ambiente sem LibreOffice/Word. Selecione o formato DOCX para baixar o contrato preenchido."
             }
