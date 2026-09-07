@@ -113,14 +113,26 @@ async def gerar_contrato(
         )
     
     elif formato == "pdf":
-        if not HAS_DOCX2PDF:
-            return {"erro": "A conversão para PDF via docx2pdf requer o Microsoft Word instalado."}
-        
         caminho_pdf_saida = pasta_gerados / "contrato_gerado.pdf"
-        convert(str(caminho_docx_saida), str(caminho_pdf_saida))
-
-        return FileResponse(
-            caminho_pdf_saida,
-            filename=f"Contrato_{contratante_nome}.pdf",
-            media_type="application/pdf"
-        )
+        
+        try:
+            import subprocess
+            subprocess.run([
+                "soffice", "--headless", "--convert-to", "pdf",
+                str(caminho_docx_saida), "--outdir", str(pasta_gerados)
+            ], check=True)
+            
+            return FileResponse(
+                caminho_pdf_saida,
+                filename=f"Contrato_{contratante_nome}.pdf",
+                media_type="application/pdf"
+            )
+        except Exception as e:
+            if HAS_DOCX2PDF:
+                convert(str(caminho_docx_saida), str(caminho_pdf_saida))
+                return FileResponse(
+                    caminho_pdf_saida,
+                    filename=f"Contrato_{contratante_nome}.pdf",
+                    media_type="application/pdf"
+                )
+            return {"erro": f"Erro na conversão para PDF: {str(e)}"}
