@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>CONTRATO RÁPIDO - Gerador</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light p-4">
+    <div class="container bg-white p-5 rounded shadow" style="max-width: 750px;">
+        <h2 class="mb-4 text-center">Gerador de Contratos</h2>
+        
+        <form action="http://127.0.0.1:8000/gerar-contrato" method="POST">
+            <!-- Escolha do Modelo -->
+            <div class="mb-4">
+                <label class="form-label"><b>Selecione o Modelo de Contrato:</b></label>
+                <select name="modelo_id" id="modelo_id" class="form-select" onchange="alternarCampos()" required>
+                    <option value="1">Modelo 1: Confissão de Dívida</option>
+                    <option value="2">Modelo 2: Compra e Venda de Veículo</option>
+                </select>
+            </div>
+
+            <!-- Dados do Cliente/Comprador -->
+            <h5 class="text-primary mt-4">Dados do Devedor / Comprador</h5>
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label class="form-label">Nome Completo:</label>
+                    <input type="text" name="contratante_nome" class="form-control" required placeholder="Ex: João da Silva">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">CPF:</label>
+                    <input type="text" name="contratante_cpf" class="form-control mascara-cpf" required placeholder="000.000.000-00" maxlength="14">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Endereço Completo:</label>
+                <input type="text" name="contratante_endereco" class="form-control" required placeholder="Rua, Nº, Bairro, Cidade/UF">
+            </div>
+
+            <!-- Dados do Fiador (Somente Modelo 2) -->
+            <div id="secao_fiador" style="display: none;">
+                <h5 class="text-primary mt-4">Dados do Fiador</h5>
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">Nome do Fiador:</label>
+                        <input type="text" name="fiador_nome" class="form-control" placeholder="Ex: Maria de Souza">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">CPF do Fiador:</label>
+                        <input type="text" name="fiador_cpf" class="form-control mascara-cpf" placeholder="000.000.000-00" maxlength="14">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Endereço do Fiador:</label>
+                    <input type="text" name="fiador_endereco" class="form-control" placeholder="Rua, Nº, Bairro, Cidade/UF">
+                </div>
+            </div>
+
+            <!-- Dados do Veículo (Somente Modelo 2) -->
+            <div id="secao_veiculo" style="display: none;">
+                <h5 class="text-primary mt-4">Dados do Veículo</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Marca/Modelo:</label>
+                        <input type="text" name="veiculo_nome" class="form-control" placeholder="Ex: Fiat Palio 1.0">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Ano/Modelo:</label>
+                        <input type="text" name="veiculo_ano" class="form-control" placeholder="Ex: 2012/2013">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Placa:</label>
+                        <input type="text" name="veiculo_placa" class="form-control" placeholder="ABC-1234">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Renavam:</label>
+                        <input type="text" name="veiculo_renavam" class="form-control" placeholder="00000000000">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Valores e Pagamento -->
+            <h5 class="text-primary mt-4">Valores e Pagamento</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Valor Total (R$):</label>
+                    <input type="text" name="valor_total" class="form-control" required placeholder="Ex: 1500,00">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Qtd. de Parcelas:</label>
+                    <input type="text" name="parcela" class="form-control" required placeholder="Ex: 10">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Valor da Parcela (R$):</label>
+                    <input type="text" name="valor_parcela" class="form-control" required placeholder="Ex: 150,00">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">1ª Data de Vencimento:</label>
+                <input type="text" name="data_vencimento" class="form-control" required placeholder="Ex: 10/10/2026">
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Formato de Saída -->
+            <div class="mb-4">
+                <label class="form-label"><b>Formato de Saída:</b></label><br>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="formato" id="docx" value="docx" checked>
+                    <label class="form-check-label" for="docx">DOCX (Word)</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="formato" id="pdf" value="pdf">
+                    <label class="form-check-label" for="pdf">PDF</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 btn-lg">Gerar Contrato</button>
+        </form>
+    </div>
+
+    <script>
+        function alternarCampos() {
+            const modelo = document.getElementById("modelo_id").value;
+            const secaoFiador = document.getElementById("secao_fiador");
+            const secaoVeiculo = document.getElementById("secao_veiculo");
+
+            if (modelo === "2") {
+                secaoFiador.style.display = "block";
+                secaoVeiculo.style.display = "block";
+            } else {
+                secaoFiador.style.display = "none";
+                secaoVeiculo.style.display = "none";
+            }
+        }
+
+        // Script para aplicar máscara de CPF automaticamente ao digitar
+        document.querySelectorAll('.mascara-cpf').forEach(input => {
+            input.addEventListener('input', e => {
+                let v = e.target.value.replace(/\D/g, '');
+                if (v.length > 11) v = v.slice(0, 11);
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                e.target.value = v;
+            });
+        });
+    </script>
+</body>
+</html>
